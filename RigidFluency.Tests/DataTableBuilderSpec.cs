@@ -68,6 +68,21 @@ namespace RigidFluency.Tests
                 .BeEquivalentTo(new[] { "Name", "Age" });
         }
 
+        [Fact]
+        public void RowValuesShouldBeMappedCorrectly()
+        {
+            var dataTable =
+                _builder
+                .AddColumn("Name", p => p.Name)
+                .AddColumn("Age", p => p.Age)
+                .Build();
+
+            GetRows(dataTable)
+                .Select(c => new { Name = c["Name"], Age = c["Age"] })
+                .Should()
+                .BeEquivalentTo(_data.Select(d => new { d.Name, d.Age }));
+        }
+
         private (string ColumnName, Func<Person, object> DataProjection)[] GetRandomColumns() =>
             Enumerable.Range(0, _random.Next(10, 50))
                 .Select(c => _fixture.Create<string>())
