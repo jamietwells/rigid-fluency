@@ -8,7 +8,7 @@ namespace RigidFluency
     public class DataTableBuilder<T>
     {
         private readonly System.Collections.Generic.IEnumerable<T> _data;
-        private IEnumerable<DataColumn<T>> _columns;
+        private readonly IEnumerable<DataColumn<T>> _columns;
 
         private DataTableBuilder(System.Collections.Generic.IEnumerable<T> data, IEnumerable<DataColumn<T>> columns)
         {
