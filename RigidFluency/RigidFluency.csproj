@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>RigidFluency</RootNamespace>
     <PackageVersion>1.0.0$(JobId)</PackageVersion>
     <PackageId>RigidFluency</PackageId>
