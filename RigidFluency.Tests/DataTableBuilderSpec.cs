@@ -40,11 +40,11 @@ namespace RigidFluency.Tests
         {
             var columns = GetRandomColumns();
 
-            var builder = _builder;
-            foreach (var (ColumnName, DataProjection) in columns)
-                builder = builder.AddColumn(ColumnName, DataProjection);
+            var dataTable = columns
+                .Aggregate(_builder, (b, c) => b.AddColumn(c.ColumnName, c.DataProjection))
+                .Build();
 
-            GetColumns(builder.Build())
+            GetColumns(dataTable)
                 .Select(c => c.ColumnName)
                 .Should()
                 .BeEquivalentTo(columns.Select(c => c.ColumnName));
@@ -53,8 +53,8 @@ namespace RigidFluency.Tests
         [Fact]
         public void DataTableBuilderShouldBeImmutable()
         {
-            foreach (var (ColumnName, DataProjection) in GetRandomColumns())
-                _builder.AddColumn(ColumnName, DataProjection);
+            _ = GetRandomColumns()
+                .Aggregate(_builder, (b, c) => b.AddColumn(c.ColumnName, c.DataProjection));
 
             var dataTable =
                 _builder
@@ -74,7 +74,7 @@ namespace RigidFluency.Tests
                 .Distinct()
                 .Select(n => (ColumnName: n, DataProjection: (Func<Person, object>)(_ => new { })))
                 .ToArray();
-                
+
         private IEnumerable<DataColumn> GetColumns(DataTable table)
         {
             foreach (DataColumn col in table.Columns)
