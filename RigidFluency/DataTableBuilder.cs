@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace RigidFluency
 {
     public class DataTableBuilder<T>
     {
         private readonly System.Collections.Generic.IEnumerable<T> _data;
-        private List<string> _columns;
+        private IEnumerable<string> _columns;
 
-        public DataTableBuilder(System.Collections.Generic.IEnumerable<T> data)
+        private DataTableBuilder(System.Collections.Generic.IEnumerable<T> data, IEnumerable<string> columns)
         {
             _data = data;
-            _columns = new List<string>();
+            _columns = columns;
         }
+
+        public DataTableBuilder(System.Collections.Generic.IEnumerable<T> data) : this(data, Enumerable.Empty<string>())
+        { }
 
         public DataTable Build()
         {
@@ -25,10 +29,7 @@ namespace RigidFluency
             return table;
         }
 
-        public DataTableBuilder<T> AddColumn<ColType>(string columnName, Func<T, ColType> dataProjection)
-        {
-            _columns.Add(columnName);
-            return this;
-        }
+        public DataTableBuilder<T> AddColumn<ColType>(string columnName, Func<T, ColType> dataProjection) => 
+            new DataTableBuilder<T>(_data, _columns.Concat(new[] { columnName }));
     }
 }

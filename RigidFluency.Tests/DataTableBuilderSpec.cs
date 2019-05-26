@@ -25,7 +25,8 @@ namespace RigidFluency.Tests
             _fixture = new Fixture(); 
             _random = new Random(); 
             _data = _fixture.Create<Person[]>();
-            _builder = new DataTableBuilder<Person>(_data); 
+            _builder = new DataTableBuilder<Person>(_data);
+
         }
 
         [Fact]
@@ -37,21 +38,46 @@ namespace RigidFluency.Tests
         [Fact]
         public void ColumnNamesShouldBeTheNamesOfTheAddedColumns()
         {
+            IEnumerable<string> ColumnNames(DataTable table)
+            {
+                foreach (DataColumn column in table.Columns)
+                    yield return column.ColumnName;
+            }
+
+            var columns = GetRandomColumns();
+
+            var builder = _builder;
+            foreach (var (ColumnName, DataProjection) in columns)
+                builder = builder.AddColumn(ColumnName, DataProjection);
+
+            ColumnNames(builder.Build()).Should().BeEquivalentTo(columns.Select(c => c.ColumnName));
+        }
+
+        private (string ColumnName, Func<Person, object> DataProjection)[] GetRandomColumns() => 
+            Enumerable.Range(0, _random.Next(10, 50))
+                .Select(c => _fixture.Create<string>())
+                .Distinct()
+                .Select(n => (ColumnName: n, DataProjection: (Func<Person, object>)(_ => new { })))
+                .ToArray();
+
+        [Fact]
+        public void DataTableBuilderShouldBeImmutable()
+        {
             IEnumerable<string> ColumnNames(DataTable table){
                 foreach (DataColumn column in table.Columns)
                     yield return column.ColumnName;
             }
 
-            var columns = Enumerable.Repeat(_fixture.Create<string>(), _random.Next(10, 50))
-                .Distinct()
-                .Select(n => ( ColumnName: n, DataProjection: (Func<Person, object>)(_ => new { })))
-                .ToArray();
-            
-            var builder = _builder;
-            foreach(var (ColumnName, DataProjection) in columns)
-                builder = builder.AddColumn(ColumnName, DataProjection);
+            foreach (var (ColumnName, DataProjection) in GetRandomColumns())
+                _builder.AddColumn(ColumnName, DataProjection);
 
-            ColumnNames(builder.Build()).Should().BeEquivalentTo(columns.Select(c => c.ColumnName));
+            var dataTable = 
+                _builder
+                .AddColumn("Name", p => p.Name)
+                .AddColumn("Age", p => p.Age)
+                .Build();
+
+            ColumnNames(dataTable).Should().BeEquivalentTo(new[]{ "Name", "Age" });
         }
     }
 }
