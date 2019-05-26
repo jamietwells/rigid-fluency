@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using AutoFixture;
 using FluentAssertions;
@@ -34,9 +35,15 @@ namespace RigidFluency.Tests
         }
 
         [Fact]
-        public void NumberOfColumnsIsEqualToNumberOfAddedColumns()
+        public void ColumnNamesShouldBeTheNamesOfTheAddedColumns()
         {
+            IEnumerable<string> ColumnNames(DataTable table){
+                foreach (DataColumn column in table.Columns)
+                    yield return column.ColumnName;
+            }
+
             var columns = Enumerable.Repeat(_fixture.Create<string>(), _random.Next(10, 50))
+                .Distinct()
                 .Select(n => ( ColumnName: n, DataProjection: (Func<Person, object>)(_ => new { })))
                 .ToArray();
             
@@ -44,7 +51,7 @@ namespace RigidFluency.Tests
             foreach(var (ColumnName, DataProjection) in columns)
                 builder = builder.AddColumn(ColumnName, DataProjection);
 
-            builder.Build().Columns.Count.Should().Be(columns.Length);
+            ColumnNames(builder.Build()).Should().BeEquivalentTo(columns.Select(c => c.ColumnName));
         }
     }
 }
