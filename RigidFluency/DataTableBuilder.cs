@@ -8,25 +8,27 @@ namespace RigidFluency
     public class DataTableBuilder<T>
     {
         private readonly System.Collections.Generic.IEnumerable<T> _data;
-        private IEnumerable<(string ColumnName,  Func<T, object> DataProjection, Type columnType)> _columns;
+        private IEnumerable<DataColumn<T>> _columns;
 
-        private DataTableBuilder(System.Collections.Generic.IEnumerable<T> data, IEnumerable<(string ColumnName,  Func<T, object> DataProjection, Type columnType)> columns)
+        private DataTableBuilder(System.Collections.Generic.IEnumerable<T> data, IEnumerable<DataColumn<T>> columns)
         {
             _data = data;
             _columns = columns;
         }
 
-        public DataTableBuilder(System.Collections.Generic.IEnumerable<T> data) : this(data, Enumerable.Empty<(string ColumnName,  Func<T, object> DataProjection, Type columnType)>())
+        public DataTableBuilder(System.Collections.Generic.IEnumerable<T> data) 
+            : this(data, Enumerable.Empty<DataColumn<T>>())
         { }
 
         public DataTable Build()
         {
             var table = new DataTable();
             foreach (var col in _columns)
-                table.Columns.Add(col.ColumnName, col.columnType);
-            foreach (var row in _data){
+                table.Columns.Add(col.ColumnName, col.ColumnType);
+            foreach (var row in _data)
+            {
                 var newRow = table.NewRow();
-                foreach(var col in _columns)
+                foreach (var col in _columns)
                     newRow[col.ColumnName] = col.DataProjection(row);
                 table.Rows.Add(newRow);
             }
@@ -34,7 +36,27 @@ namespace RigidFluency
         }
 
         public DataTableBuilder<T> AddColumn<ColType>(string columnName, Func<T, ColType> dataProjection) =>
-            new DataTableBuilder<T>(_data, _columns.Concat<(string ColumnName,  Func<T, object> DataProjection, Type columnType)>((ColumnName: columnName, DataProjection: (Func<T, object>)(row => (object)dataProjection(row)), columnType: typeof(ColType)) ));
+            AddColumn(DataColumn<T>.Create(columnName, dataProjection));
+        
+        private DataTableBuilder<T> AddColumn(DataColumn<T> column) =>
+            new DataTableBuilder<T>(_data, _columns.Concat(column));
+
+        class DataColumn<TRow>
+        {
+            public static DataColumn<TRow> Create<TCol>(string columnName, Func<TRow, TCol> dataProjection) => 
+                new DataColumn<TRow>(columnName, r => dataProjection(r), typeof(TCol));
+
+            private DataColumn(string columnName, Func<TRow, object> dataProjection, Type colType)
+            {
+                ColumnName = columnName;
+                DataProjection = dataProjection;
+                ColumnType = colType;
+            }
+
+            public string ColumnName { get; }
+            public Func<TRow, object> DataProjection { get; }
+            public Type ColumnType { get; }
+        }
     }
 
     public static class LinqConcatExtension
