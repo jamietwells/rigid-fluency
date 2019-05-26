@@ -22,14 +22,14 @@ namespace RigidFluency
         public DataTable Build()
         {
             var table = new DataTable();
-            foreach(var col in _columns)
+            foreach (var col in _columns)
                 table.Columns.Add(col);
             foreach (var row in _data)
                 table.Rows.Add(table.NewRow());
             return table;
         }
 
-        public DataTableBuilder<T> AddColumn<ColType>(string columnName, Func<T, ColType> dataProjection) => 
+        public DataTableBuilder<T> AddColumn<ColType>(string columnName, Func<T, ColType> dataProjection) =>
             new DataTableBuilder<T>(_data, _columns.Concat(new[] { columnName }));
     }
 }

@@ -9,8 +9,8 @@ using Xunit;
 namespace RigidFluency.Tests
 {
     public class DataTableBuilderSpec
-    {        
-        class Person 
+    {
+        class Person
         {
             public string Name { get; set; }
             public int Age { get; set; }
@@ -22,8 +22,8 @@ namespace RigidFluency.Tests
 
         public DataTableBuilderSpec()
         {
-            _fixture = new Fixture(); 
-            _random = new Random(); 
+            _fixture = new Fixture();
+            _random = new Random();
             _data = _fixture.Create<Person[]>();
             _builder = new DataTableBuilder<Person>(_data);
 
@@ -38,46 +38,53 @@ namespace RigidFluency.Tests
         [Fact]
         public void ColumnNamesShouldBeTheNamesOfTheAddedColumns()
         {
-            IEnumerable<string> ColumnNames(DataTable table)
-            {
-                foreach (DataColumn column in table.Columns)
-                    yield return column.ColumnName;
-            }
-
             var columns = GetRandomColumns();
 
             var builder = _builder;
             foreach (var (ColumnName, DataProjection) in columns)
                 builder = builder.AddColumn(ColumnName, DataProjection);
 
-            ColumnNames(builder.Build()).Should().BeEquivalentTo(columns.Select(c => c.ColumnName));
+            GetColumns(builder.Build())
+                .Select(c => c.ColumnName)
+                .Should()
+                .BeEquivalentTo(columns.Select(c => c.ColumnName));
         }
-
-        private (string ColumnName, Func<Person, object> DataProjection)[] GetRandomColumns() => 
-            Enumerable.Range(0, _random.Next(10, 50))
-                .Select(c => _fixture.Create<string>())
-                .Distinct()
-                .Select(n => (ColumnName: n, DataProjection: (Func<Person, object>)(_ => new { })))
-                .ToArray();
 
         [Fact]
         public void DataTableBuilderShouldBeImmutable()
         {
-            IEnumerable<string> ColumnNames(DataTable table){
-                foreach (DataColumn column in table.Columns)
-                    yield return column.ColumnName;
-            }
-
             foreach (var (ColumnName, DataProjection) in GetRandomColumns())
                 _builder.AddColumn(ColumnName, DataProjection);
 
-            var dataTable = 
+            var dataTable =
                 _builder
                 .AddColumn("Name", p => p.Name)
                 .AddColumn("Age", p => p.Age)
                 .Build();
 
-            ColumnNames(dataTable).Should().BeEquivalentTo(new[]{ "Name", "Age" });
+            GetColumns(dataTable)
+                .Select(c => c.ColumnName)
+                .Should()
+                .BeEquivalentTo(new[] { "Name", "Age" });
+        }
+
+        private (string ColumnName, Func<Person, object> DataProjection)[] GetRandomColumns() =>
+            Enumerable.Range(0, _random.Next(10, 50))
+                .Select(c => _fixture.Create<string>())
+                .Distinct()
+                .Select(n => (ColumnName: n, DataProjection: (Func<Person, object>)(_ => new { })))
+                .ToArray();
+                
+        private IEnumerable<DataColumn> GetColumns(DataTable table)
+        {
+            foreach (DataColumn col in table.Columns)
+                yield return col;
+        }
+
+        private IEnumerable<DataRow> GetRows(DataTable table)
+        {
+            foreach (DataRow row in table.Rows)
+                yield return row;
         }
     }
 }
