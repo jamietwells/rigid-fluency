@@ -2,6 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>RigidFluency</RootNamespace>
+    <PackageVersion>1.0.0$(JobId)</PackageVersion>
+    <PackageId>RigidFluency</PackageId>
+    <Title>RigidFluency</Title>
+    <Authors>jamietwells</Authors>
+    <PackageDescription>
+This package adds immutable fluent builders for some common but verbose classes. 
+So far the completed classes include:
+
+    + System.Data.DataTable
+</PackageDescription>
+    <PackageTags>DataTable;Fluent</PackageTags>
+    <RepositoryUrl>https://github.com/jamietwells/rigid-fluency/</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
