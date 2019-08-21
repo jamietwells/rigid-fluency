@@ -5,6 +5,12 @@ using System.Linq;
 
 namespace RigidFluency
 {
+    public class DataTableBuilder
+    {
+        public static DataTableBuilder<T> From<T>(System.Collections.Generic.IEnumerable<T> data) =>
+            new DataTableBuilder<T>(data);
+    }
+
     public class DataTableBuilder<T>
     {
         private readonly System.Collections.Generic.IEnumerable<T> _data;
@@ -16,7 +22,7 @@ namespace RigidFluency
             _columns = columns;
         }
 
-        public DataTableBuilder(System.Collections.Generic.IEnumerable<T> data) 
+        public DataTableBuilder(System.Collections.Generic.IEnumerable<T> data)
             : this(data, Enumerable.Empty<DataColumn<T>>())
         { }
 
@@ -25,11 +31,12 @@ namespace RigidFluency
             var table = new DataTable();
             foreach (var col in _columns)
                 table.Columns.Add(col.ColumnName, col.ColumnType);
+            
             foreach (var row in _data)
             {
                 var newRow = table.NewRow();
                 foreach (var col in _columns)
-                    newRow[col.ColumnName] = col.DataProjection(row);
+                    newRow[col.ColumnName] = col.DataProjection(row) ?? DBNull.Value;
                 table.Rows.Add(newRow);
             }
             return table;
@@ -37,20 +44,20 @@ namespace RigidFluency
 
         public DataTableBuilder<T> AddColumn<ColType>(string columnName, Func<T, ColType> dataProjection) =>
             AddColumn(DataColumn<T>.Create(columnName, dataProjection));
-        
+
         private DataTableBuilder<T> AddColumn(DataColumn<T> column) =>
             new DataTableBuilder<T>(_data, _columns.Concat(column));
 
         class DataColumn<TRow>
         {
-            public static DataColumn<TRow> Create<TCol>(string columnName, Func<TRow, TCol> dataProjection) => 
+            public static DataColumn<TRow> Create<TCol>(string columnName, Func<TRow, TCol> dataProjection) =>
                 new DataColumn<TRow>(columnName, r => dataProjection(r), typeof(TCol));
 
             private DataColumn(string columnName, Func<TRow, object> dataProjection, Type colType)
             {
                 ColumnName = columnName;
                 DataProjection = dataProjection;
-                ColumnType = colType;
+                ColumnType = Nullable.GetUnderlyingType(colType) ?? colType;
             }
 
             public string ColumnName { get; }
