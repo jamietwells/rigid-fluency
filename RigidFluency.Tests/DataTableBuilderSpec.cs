@@ -1,5 +1,4 @@
 using System;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -28,8 +27,8 @@ namespace RigidFluency.Tests
 
         class Person
         {
-            public string Name { get; set; }
-            public Person AlwaysNullReference => null;
+            public string? Name { get; set; }
+            public Person? AlwaysNullReference => null;
             public int Age { get; set; }
             public int? NullableInt { get; set; }
             public Guid? NullableGuid { get; set; }

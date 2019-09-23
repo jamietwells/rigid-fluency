@@ -9,6 +9,8 @@
     <Authors>jamietwells</Authors>
     <PackageTags>DataTable;Fluent</PackageTags>
     <RepositoryUrl>https://github.com/jamietwells/rigid-fluency/</RepositoryUrl>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
 </Project>

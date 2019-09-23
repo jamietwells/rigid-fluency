@@ -53,7 +53,7 @@ namespace RigidFluency
             public static DataColumn<TRow> Create<TCol>(string columnName, Func<TRow, TCol> dataProjection) =>
                 new DataColumn<TRow>(columnName, r => dataProjection(r), typeof(TCol));
 
-            private DataColumn(string columnName, Func<TRow, object> dataProjection, Type colType)
+            private DataColumn(string columnName, Func<TRow, object?> dataProjection, Type colType)
             {
                 ColumnName = columnName;
                 DataProjection = dataProjection;
@@ -61,7 +61,7 @@ namespace RigidFluency
             }
 
             public string ColumnName { get; }
-            public Func<TRow, object> DataProjection { get; }
+            public Func<TRow, object?> DataProjection { get; }
             public Type ColumnType { get; }
         }
     }
